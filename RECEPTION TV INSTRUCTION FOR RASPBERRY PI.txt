@@ -1,0 +1,86 @@
+
+= RECEPTION TV INSTRUCTION FOR RASPBERRY PI =
+ ___________________________________________
+
+= THEME INSTALL =
+_________________
+1. Install wordpress to a reachable URL. e.g. http://10.57.124.71/
+
+2. Once install login to wordpress and install a plugin called WP Clone (https://wordpress.org/plugins/wp-clone-by-wp-academy/)
+
+3. Download ____.zip and place it to the reachable directory (../wp-content/uploads/wp-clone)
+
+4. Click on button (Scan and repopulate the backup list), once popped up click, tick (I Agree) & Restore Backup. 
+
+5. Once completed you will be asked to login again, the username & password for this is Admin & pass. 
+
+
+
+= RASPBERRY PI =
+________________
+
+1. Install Raspbian latest issue. 
+
+2. Get your terminal window open and type:
+	" sudo raspi-config "
+	then use the old fashioned text menu to do the following:
+	- Expand the filesystem (option 1)
+	- Change the User Password (option2)
+	- Change Boot Options to "Desktop Autologin" (option B4 under Boot Options)
+	- Change your regional settings (option 5)
+	- Set your Hostname (option A2 under Advanced Options)
+	- Make sure SSH is turned on (option A4 under Advanced Options)
+	- Change the Memory Split to 128 (or more) for video or intense graphic content (option A3 under Advanced Options)
+	If you want to alter any of the other stuff, do that now before you select <Finish> to end it and reboot.
+
+
+**Special Note: Do NOT try using the overclock feature. If you plan to use this pi as a signage display, do you really want to receive the embarrassing phone call on your day off that your little unattended pi box burnt up? Swallow your pride and let it run at it's own speed. If you wanted something faster you should have spent more money on different hardware.
+
+3. open your terminal and type the following commands 
+	" sudo apt-get update "
+	" apt-get install unclutter "
+	" apt-get install xdotool "
+
+
+
+4. Ensure your terminal is pointing to /home/pi directory. 
+	We need to create 2 little scripts in your landing directory so we can circumvent the maddening, tempermental, ugh. Maybe I don't have enough beer after all.
+	Create the scripts like this:
+	nano start_chromium.sh
+	# Run browser after boot to desktop
+	/bin/sleep 3
+	sudo -u pi chromium-browser --kiosk --incognito http://your.favorite.website &
+	# End of script
+	Ctrl-x to close and save the file.
+	(If I need to tell you to replace "your.favorite.website" with your intended display webpage, then you are a total spoon.)
+
+	Okay, now let's do the other script:
+	nano start_URLrefresh.sh
+	# Start a goofy command loop to refresh the browser every 90 seconds
+	/bin/sleep 6
+	/usr/bin/lxterminal --command watch -n 90 xdotool key ctrl+F5 &
+	# End of goofy script
+	Ctrl-x to close and save the file.
+
+
+5. Now we need to give the scripts we have just made executable. Type the following into a terminal.
+	sudo chmod 755 start_URLrefresh.sh
+	sudo chmod +x start_URLrefresh.sh
+	sudo chmod 755 start_chromium.sh
+	sudo chmod +x start_chromium.sh
+
+
+6. Now we ned to make these scripts autostart. We can do this by adding the following code to the autostart file. So type the following into a terminal.
+
+	nano /etc/xdg/.config/lxsession/LXDE-pi/autostart
+		@xset s off
+		@xset s noblank
+		@xset -dpms
+		@unclutter -idle 5 -root
+		@/home/pi/start_URLrefresh.sh
+		@/home/pi/start_chromium.sh
+	Now don't close the file just yet, you need to comment out one line with a #, so edit to look like this:
+		# @xscreensaver -no-splash
+	Now you can Crtl-x to close and save the file.
+
+7. Fingers crossed type sudo reboot and your signage display come to life.
